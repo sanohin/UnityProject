@@ -16,6 +16,7 @@ public class LevelController : MonoBehaviour {
 	}
 
 	public void onRabbitDeath(Rabbit rabbit) {
+	  rabbit.Reborn();
 	  rabbit.transform.position = this.startingPosition;
 	}
 }
