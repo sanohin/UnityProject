@@ -37,9 +37,15 @@ public class Rabbit : MonoBehaviour
     Rigidbody2D body = null;
     SpriteRenderer sr = null;
     Animator animator = null;
+    public static Rabbit lastRabit = null;
+    void Awake()
+    {
+        lastRabit = this;
+    }
 
     void Start()
     {
+        Awake();
         body = this.GetComponent<Rigidbody2D>();
         sr = this.GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
@@ -163,6 +169,11 @@ public class Rabbit : MonoBehaviour
     public void Reborn()
     {
         this.dead = false;
+    }
+
+    public void LiftUp(int y = 5)
+    {
+        this.body.velocity += new Vector2(0, y);
     }
 
     private void UpdateProtecion()
