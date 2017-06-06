@@ -13,7 +13,7 @@ public class OrcGreen : Orc
             mode = Mode.Attack;
         }
     }
-    protected virtual void UpdateMove()
+    protected override void UpdateMove()
     {
         UpdateAttack();
         base.UpdateMove();

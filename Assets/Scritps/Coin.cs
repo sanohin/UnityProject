@@ -4,10 +4,9 @@ using UnityEngine;
 
 public class Coin : Collectable
 {
-
     protected override void OnRabbitHit(Rabbit rabbit)
     {
-
         this.CollectedHide();
+        LevelController.current.addCoins();
     }
 }

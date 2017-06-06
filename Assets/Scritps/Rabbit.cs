@@ -3,30 +3,10 @@ using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 
-public class Rabbit : MonoBehaviour
+public sealed class Rabbit : MonoBehaviour
 {
-
     public float speed = 1;
-    bool isGrounded = false;
-    bool JumpActive = false;
-    float JumpTime = 0f;
-    private bool dead = false;
-    private bool big = false;
-    public bool Big
-    {
-        get
-        {
-            return big;
-        }
-        protected set
-        {
-            big = value;
-        }
-    }
-    public float MaxJumpTime = 2f;
-    public float JumpSpeed = 2f;
-    private Transform heroParent = null;
-    private float protectionTime = 0;
+    public static Rabbit lastRabit = null;
     public bool IsProtected
     {
         get
@@ -34,32 +14,56 @@ public class Rabbit : MonoBehaviour
             return protectionTime > 0;
         }
     }
-    Rigidbody2D body = null;
-    SpriteRenderer sr = null;
-    Animator animator = null;
-    public static Rabbit lastRabit = null;
-    void Awake()
+    public bool Big
     {
-        lastRabit = this;
+        get
+        {
+            return big;
+        }
+        private set
+        {
+            big = value;
+        }
     }
-
+    public bool disabled = false;
+    public float maxJumpTime = 2f;
+    public float jumpSpeed = 2f;
+    private bool jumpActive = false;
+    private float jumpTime = 0f;
+    private bool dead = false;
+    private bool big = false;
+    private bool isGrounded = false;
+    private Transform heroParent = null;
+    private float protectionTime = 0;
+    private Rigidbody2D body = null;
+    private SpriteRenderer sr = null;
+    private Animator animator = null;
     void Start()
     {
-        Awake();
+        AddLastRabbit();
         body = this.GetComponent<Rigidbody2D>();
         sr = this.GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
-        LevelController.current.setStartPosition(transform.position);
+        if (LevelController.current != null)
+        {
+            LevelController.current.setStartPosition(transform.position);
+        }
         this.heroParent = this.transform.parent;
     }
-
+    private void AddLastRabbit()
+    {
+        lastRabit = this;
+    }
     void Update()
     {
-        if (!this.dead)
+        if (!this.dead && !disabled)
         {
             UpdateMovement();
+            UpdateProtecion();
+            UpdatePosition();
+            UpdateJump();
+            animator.SetBool("dead", this.dead);
         }
-        animator.SetBool("dead", this.dead);
     }
 
     private void UpdateMovement()
@@ -73,16 +77,6 @@ public class Rabbit : MonoBehaviour
         }
         animator.SetFloat("speed", Mathf.Abs(value) * speed);
         sr.flipX = value < 0;
-    }
-
-    void FixedUpdate()
-    {
-        if (!this.dead)
-        {
-            UpdateProtecion();
-            UpdatePosition();
-            UpdateJump();
-        }
     }
     private void UpdatePosition()
     {
@@ -110,23 +104,23 @@ public class Rabbit : MonoBehaviour
     {
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
-            this.JumpActive = true;
+            this.jumpActive = true;
         }
-        if (this.JumpActive)
+        if (this.jumpActive)
         {
             if (Input.GetButton("Jump"))
             {
-                this.JumpTime += Time.deltaTime;
-                if (this.JumpTime < this.MaxJumpTime)
+                this.jumpTime += Time.deltaTime;
+                if (this.jumpTime < this.maxJumpTime)
                 {
                     Vector2 vel = body.velocity;
-                    vel.y = JumpSpeed * (1.0f - JumpTime / MaxJumpTime); body.velocity = vel;
+                    vel.y = jumpSpeed * (1.0f - jumpTime / maxJumpTime); body.velocity = vel;
                 }
             }
             else
             {
-                this.JumpActive = false;
-                this.JumpTime = 0;
+                this.jumpActive = false;
+                this.jumpTime = 0;
             }
         }
         animator.SetBool("grounded", this.isGrounded);
